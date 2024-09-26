@@ -51,12 +51,32 @@ const userSchema = new Schema(
     { timestamps: true }
 );
 
+
+//============================= Document Middleware ===========================//
+
 userSchema.pre("save", function (next) {
-    // console.log("========================PRE HOOK==============================");
+    // console.log("=======================PRE HOOK=============================");
     if (this.isModified("password")) {
     this.password = hashSync(this.password, +process.env.SALT_ROUNDS);
     }
     next();
 });
+
+userSchema.pre("updateOne", { document: true, query: false }, function(next) {
+    // console.log("====================PRE update hook==========================");
+    next();
+});
+
+
+//============================= Query Middleware ===========================//
+userSchema.pre(["updateOne", "findOneAndUpdate"], function(next) {
+    // console.log("====================PRE update hook==========================");
+    console.log(this.getQuery());
+    console.log(this.getFilter());
+    console.log(this.getOptions());
+    console.log(this.getUpdate());
+    next();
+});
+
 
 export const User = mongoose.models.User || model("User", userSchema);

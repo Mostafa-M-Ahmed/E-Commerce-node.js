@@ -42,10 +42,10 @@ export const registerUser = async (req, res, next) => {
 };
 
 
-export const updateAccount = async (req, res, next) =>{
+export const updateAccount = async (req, res, next) => {
     const { userId } = req.params;
-    const { username, password } = req. body ;
-    // find suer
+    const { username, password } = req.body ;
+    // find user
     const user = await User.findById(userId);
     if (!user) {
     return next(new ErrorClass("User not found", 404));

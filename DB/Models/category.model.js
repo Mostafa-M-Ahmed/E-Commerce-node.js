@@ -39,5 +39,23 @@ const categorySchema = new Schema(
   { timestamps: true }
 );
 
+categorySchema.post("findOneAndDelete", async function () {
+
+  const _id = this.getQuery()._id;
+  // delere relivant subcategories from db
+  const deletedSubCategories = await mongoose.models.SubCategory.deleteMany({
+    categoryId: _id,
+  });
+  // check if subcategories are deleted already
+  if (deletedSubCategories.deletedCount) {
+    // delete the relivant brands from db
+    const deletedBrands = await mongoose.models.Brand.deleteMany({ categoryId: _id });
+    if (deletedBrands.deletedCount) {
+      // delete the related products from db
+      await mongoose.models.Product.deleteMany({ categoryId: _id });
+    }
+  }
+})
+
 export const Category =
   mongoose.models.Category || model("Category", categorySchema);

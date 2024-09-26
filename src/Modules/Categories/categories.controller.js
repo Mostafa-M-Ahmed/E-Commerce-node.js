@@ -5,6 +5,7 @@ import { ErrorClass } from "../../Utils/error-class.utils.js";
 import { cloudinaryConfig, uploadFile } from "../../Utils/index.js";
 // models
 import { Brand, Category, SubCategory } from "../../../DB/Models/index.js";
+import { ApiFeatures } from "../../Utils/api-features.utils.js";
 
 /**
  * @api {POST} /categories/create  create a  new category
@@ -149,19 +150,6 @@ export const deleteCategory = async (req, res, next) => {
   // delete relivant images from cloudinary
   const categoryPath = `${process.env.UPLOADS_FOLDER}/Categories/${category?.customId}`;
 
-  // delere relivant subcategories from db
-  const deletedSubCategories = await SubCategory.deleteMany({
-    categoryId: _id,
-  });
-  // check if subcategories are deleted already
-  if (deletedSubCategories.deletedCount) {
-    // delete the relivant brands from db
-    const deletedBrands = await Brand.deleteMany({ categoryId: _id });
-    if (deletedBrands.deletedCount) {
-      // delete the related products from db
-      await Product.deleteMany({ categoryId: _id });
-    }
-  }
 
   // delete the folder from cloudinary
   await cloudinaryConfig().api.delete_resources_by_prefix(categoryPath);
@@ -172,3 +160,18 @@ export const deleteCategory = async (req, res, next) => {
     message: "Category deleted successfully",
   });
 };
+
+export const listCategories = async (req, res, next) => {
+  const mongooseQuery = Category.find();
+  const ApiFeaturesInstance = new ApiFeatures(mongooseQuery, req.query)
+    .pagination()
+    .filters();
+
+    const list = await ApiFeaturesInstance.mongooseQuery;
+
+    res.status(200).json({
+    status: "success",
+    message: "Categories found",
+    data: list,
+    });
+}

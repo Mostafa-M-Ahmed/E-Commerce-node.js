@@ -8,6 +8,7 @@ import {
   ErrorClass,
   uploadFile,
 } from "../../Utils/index.js";
+import { ApiFeatures } from "../../Utils/api-features.utils.js";
 
 /**
  * @api {post} /products/add  Add Product
@@ -172,31 +173,25 @@ export const deleteProduct = async (req, res, next) => {
  */
 export const listProducts = async (req, res, next) => {
   // find all products
-  const { page = 1, limit = 5 } = req.query;
-  const skip = (page - 1) * limit;
-  /**
-   * @way 1 using find , limit , skip methods
-   */
-  const data = await Product.find()
-    .limit(limit)
-    .skip(skip)
-    .select("-Images --spescs -categoryId -subCategoryId -brandId");
+  // const { page = 1, limit = 5, ...filters } = req.query;
+  // const skip = (page - 1) * limit;
+
+  // const filtersAsString = JSON.stringify(filters);
+  // const replacedFilter = filtersAsString.replaceAll(
+  //   /lt|gt|lte|gte|regex|ne|eq/g,
+  //   (ele) => `$${ele}`
+  // );
+  // const parsedFilters = JSON.parse(replacedFilter);
 
   /**
    * @way 2 using paginate method from mongoose-paginate-v2 as schema plugin
    */
-  const products = await Product.paginate(
-    {
-      appliedPrice: { $gte: 20000 },
-    },
-    {
-      page,
-      limit,
-      skip,
-      select: "-Images --spescs -categoryId -subCategoryId -brandId",
-      sort: { appliedPrice: 1 },
-    }
-  );
+  const mongooseQuery = Product.find();
+  const ApiFeaturesInstance = new ApiFeatures(
+    mongooseQuery, req.query
+  ).pagination().filters();
+
+  const products = await ApiFeaturesInstance.mongooseQuery;
   // send the response
   res.status(200).json({
     status: "success",
