@@ -1,8 +1,8 @@
 /**
  *  @api { POST } / users/register Register a new user
  */
-
-import { hashSync } from "bcrypt";
+import jwt from "jsonwebtoken";
+import { compareSync, hashSync } from "bcrypt";
 import { User, Address } from "../../../DB/Models/index.js";
 import { ErrorClass } from "../../Utils/index.js";
 
@@ -53,6 +53,35 @@ export const registerUser = async (req, res, next) => {
     });
 };
 
+
+/**
+ * @description Sign in a user.
+ * @param {Object} req - The request object containing credentials.
+ * @param {Object} res - The response object to send the result.
+ * @returns {Object} A success message and a token.
+ */
+export const login = async (req, res, next) => {
+    const { email, password } = req.body;
+  
+    try {
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        return next(new ErrorClass("Email not found", 400, "Invalid credentials"));
+      }
+      const isMatch = compareSync(password, user.password);
+      if (!isMatch) {
+        return next(new ErrorClass("Invalid credentials", 400, "Invalid credentials"));
+      }
+  
+      const token = jwt.sign({ userId: user._id }, process.env.LOGIN_SECRET);
+  
+      res.status(200).json({ message: "User signed in successfully", token });
+    } catch (err) {
+      next(err);
+    }
+  };
+  
 
 export const updateAccount = async (req, res, next) => {
     const { userId } = req.params;

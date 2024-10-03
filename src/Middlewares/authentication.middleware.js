@@ -10,6 +10,7 @@ export const auth = () => {
   return async (req, res, next) => {
     // destruct token from headers
     const { token } = req.headers;
+    
     // check if token exists
     if (!token) {
       return next(

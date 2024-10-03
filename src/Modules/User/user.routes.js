@@ -7,6 +7,7 @@ const userRouter = Router();
 const { errorHandler } = Middlewares;
 
 userRouter.post("/register", errorHandler(controller.registerUser));
+userRouter.post("/login", errorHandler(controller.login));
 userRouter.patch( "/update/:userId", errorHandler(controller.updateAccount)) ;
 userRouter.delete("/delete/:userId", errorHandler(controller.deleteAccount));
 
