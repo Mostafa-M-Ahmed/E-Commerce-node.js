@@ -3,11 +3,11 @@
  */
 
 import { hashSync } from "bcrypt";
-import { User } from "../. ./../DB/Mode1s/index.js";
-import { ErrorClass } from "../. ./Uti1s/index.js";
+import { User, Address } from "../../../DB/Models/index.js";
+import { ErrorClass } from "../../Utils/index.js";
 
 export const registerUser = async (req, res, next) => {
-    const { username, email, password, gender, age, phone, userType } = req.body;
+    const { username, email, password, gender, age, phone, userType, country, city, postalCode, buildingNumber, floorNumber, addressLabel } = req.body;
 
     // email check
     const isEmailExist = await User.findOne({ email });
@@ -19,7 +19,7 @@ export const registerUser = async (req, res, next) => {
     // no need to hash there ==> transfered to model pre save
     
     // send email verification link
-    const userObject = new User({
+    const userInstance = new User({
         username,
         email,
         password,
@@ -29,15 +29,27 @@ export const registerUser = async (req, res, next) => {
         userType
     });
 
-    // create the user in db
-    // const newUser = await User.create(userObject);
-    const newUser = await userObject.save();
+    //create new address instance
+    const addressInstance = new Address({
+        userId: userInstance._id,
+        country,
+        city,
+        postalCode,
+        buildingNumber,
+        floorNumber,
+        addressLabel,
+        isDefault: true,
 
+    })
+    // create the user in db
+    const newUser = await userInstance.save();
+
+    const savedAddress = await addressInstance.save();
     // send the response
     res.status(201).json({
         status: "success",
         message: "User created successfully",
-        data: newUser,
+        data: newUser, savedAddress,
     });
 };
 

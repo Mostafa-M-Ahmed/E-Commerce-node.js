@@ -71,10 +71,10 @@ userSchema.pre("updateOne", { document: true, query: false }, function(next) {
 //============================= Query Middleware ===========================//
 userSchema.pre(["updateOne", "findOneAndUpdate"], function(next) {
     // console.log("====================PRE update hook==========================");
-    console.log(this.getQuery());
-    console.log(this.getFilter());
-    console.log(this.getOptions());
-    console.log(this.getUpdate());
+    // console.log(this.getQuery());
+    // console.log(this.getFilter());
+    // console.log(this.getOptions());
+    // console.log(this.getUpdate());
     next();
 });
 
