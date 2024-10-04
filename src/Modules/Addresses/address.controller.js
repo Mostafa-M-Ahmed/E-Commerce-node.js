@@ -86,3 +86,8 @@ export const deleteAddress = async (req, res, next) => {
 /**
  * @api {GET} /addresses Get all addresses
  */
+export const getAddresses = async (req, res, next) => {
+    const userId = req.authUser._id;    //user must be logged in
+    const addresses = await Address.find({ userId, isMarkedAsDeleted: false })
+    res.status(200).json({ addresses })
+}
