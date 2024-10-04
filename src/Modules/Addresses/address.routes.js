@@ -9,5 +9,6 @@ const addressRouter = Router();
 const { auth, errorHandler } = middleware;
 
 addressRouter.post("/add", auth(), errorHandler(controller.addAddress));
+addressRouter.put("/edit/:id", auth(), errorHandler(controller.editAddress));
 
 export {addressRouter}

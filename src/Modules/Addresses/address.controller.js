@@ -1,4 +1,5 @@
 import { Address } from "../../../DB/Models/index.js";
+import { ErrorClass } from "../../Utils/error-class.utils.js";
 
 
 /**
@@ -37,6 +38,31 @@ export const addAddress = async (req, res, next) => {
 /**
  * @api {PUT} /addresses/edit/:id Edit address by id
  */
+export const editAddress = async (req, res, next) => {
+    const { country, city, postalCode, buildingNumber, floorNumber, addressLabel, setAsDefault } = req.body;     //setAsDefault from frontend
+    const userId = req.authUser._id;    //user must be logged in
+    const { addressId } = req.params
+
+    const address = await Address.findOne({ _id: addressId, userId, isMarkedAsDeleted: false })
+    if (!address) {
+        return next(new ErrorClass("Address not found", 404, "Address not found"))
+    }
+
+    if (country) address.country = country;
+    if (city) address.city = city;
+    if (postalCode) address.postalCode = postalCode;
+    if (buildingNumber) address.buildingNumber = buildingNumber;
+    if (floorNumber) address.floorNumber = floorNumber;
+    if (addressLabel) address.addressLabel = addressLabel;
+    if ([true, false].includes(setAsDefault) ? setAsDefault : false) {
+        address.isDefault = [true, false].includes(setAsDefault) ? setAsDefault : false
+        await Address.updateOne({ userId, isDefault: true }, { isDefault: false })
+    }
+
+    await address.save()
+    res.status(200).json({ message: "Address updated", address })
+}
+
 
 /**
  * @api {DELETE} /addresses/delete/:id Delete address by id
