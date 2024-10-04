@@ -67,6 +67,21 @@ export const editAddress = async (req, res, next) => {
 /**
  * @api {DELETE} /addresses/delete/:id Delete address by id
  */
+export const deleteAddress = async (req, res, next) => {
+    const userId = req.authUser._id;    //user must be logged in
+    const { addressId } = req.params
+
+    const address = await Address.findOneAndUpdate(
+        { _id: addressId, userId, isMarkedAsDeleted: false },
+        { isMarkedAsDeleted: true, isDefault: false },
+        { new: true }
+    )
+    if (!address) {
+        return next(new ErrorClass("Address not found", 404, "Address not found"))
+    }
+
+    res.status(200).json({ message: "Address deleted", address })
+}
 
 /**
  * @api {GET} /addresses Get all addresses

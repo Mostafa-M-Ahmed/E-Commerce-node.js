@@ -10,5 +10,7 @@ const { auth, errorHandler } = middleware;
 
 addressRouter.post("/add", auth(), errorHandler(controller.addAddress));
 addressRouter.put("/edit/:id", auth(), errorHandler(controller.editAddress));
+addressRouter.put("/soft-delete/:id", auth(), errorHandler(controller.deleteAddress));
+
 
 export {addressRouter}
