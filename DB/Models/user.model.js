@@ -62,21 +62,5 @@ userSchema.pre("save", function (next) {
     next();
 });
 
-userSchema.pre("updateOne", { document: true, query: false }, function(next) {
-    // console.log("====================PRE update hook==========================");
-    next();
-});
-
-
-//============================= Query Middleware ===========================//
-userSchema.pre(["updateOne", "findOneAndUpdate"], function(next) {
-    // console.log("====================PRE update hook==========================");
-    // console.log(this.getQuery());
-    // console.log(this.getFilter());
-    // console.log(this.getOptions());
-    // console.log(this.getUpdate());
-    next();
-});
-
 
 export const User = mongoose.models.User || model("User", userSchema);

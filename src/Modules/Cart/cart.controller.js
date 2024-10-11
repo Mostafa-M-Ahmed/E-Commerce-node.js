@@ -1,4 +1,5 @@
 import { Cart } from "../../../DB/Models/index.js";
+import { Product } from "../../../DB/Models/index.js";
 import { ErrorClass } from "../../Utils/index.js";
 
 
@@ -54,9 +55,10 @@ export const removeFromCart = async (req, res, next) => {
     const userId = req.authUser._id;
     const { productId } = req.params;
 
+    // is product exists in cart
     const cart = await Cart.findOne({ userId, 'products.productId': productId })
-    //'products.productId' to search  for field "productId" inside array "products"
-    //just like looping on array and search
+    // 'products.productId' to search  for field "productId" inside array "products"
+    // just like looping on array and search
                                                                                     
     if (!cart) {
         return next(new ErrorClass("Product not in cart", 404, "Product not in cart"))
@@ -72,7 +74,7 @@ export const removeFromCart = async (req, res, next) => {
 
     cart.subTotal = 0;
     cart.products.forEach(p => {
-        cart.subTotal += p.price * p.qunatity;
+        cart.subTotal += p.price * p.quantity;
     })
     await cart.save();
     res.status(200).json({ message: "Product removed from cart", cart })
@@ -81,7 +83,31 @@ export const removeFromCart = async (req, res, next) => {
 /**
  * @api {POST}  /carts/update update to cart
  */
+export const updateCart = async (req, res, next) => {
+    const userId = req.authUser._id;
+    const { quantity } = req.body;
+    const { productId } = req.params;
 
+    const cart = await Cart.findOne({ userId, 'products.productId': productId })                                                                                    
+    if (!cart) {
+        return next(new ErrorClass("Product not in cart", 404, "Product not in cart"))
+    }
+
+    const product = await Product.findOne({ _id: productId, stock: { $gte: quantity } })
+    if (!product) {
+        return next(new ErrorClass("Product not available", 404, "Product not available"))
+    }
+
+    const productIndex = cart.products.findIndex(p => p.productId.toString() == product._id.toString());
+    cart.products[productIndex].quantity = quantity;
+
+    cart.subTotal = 0;
+    cart.products.forEach(p => {
+        cart.subTotal += p.price * p.quantity;
+    })
+    await cart.save();
+    res.status(200).json({ message: "Cart updated", cart })
+}
 
 /**
  * @api {GET}  /carts Get cart
