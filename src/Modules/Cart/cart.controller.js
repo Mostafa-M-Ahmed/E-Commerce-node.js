@@ -112,3 +112,8 @@ export const updateCart = async (req, res, next) => {
 /**
  * @api {GET}  /carts Get cart
  */
+export const getCart = async (req, res, next) => {
+    const userId = req.authUser._id;
+    const cart = await Cart.findOne({ userId });
+    res.status(200).json({ cart });
+}
