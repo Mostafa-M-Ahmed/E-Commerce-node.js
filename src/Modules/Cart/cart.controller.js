@@ -1,6 +1,6 @@
-import { Cart } from "../../../DB/Models/index.js";
-import { Product } from "../../../DB/Models/index.js";
+import { Cart, Product } from "../../../DB/Models/index.js";
 import { ErrorClass } from "../../Utils/index.js";
+import { checkProductStock } from "./Utils/cart.utils.js";
 
 
 /**
@@ -11,22 +11,21 @@ export const AddToCart = async (req, res, next) => {
     const { quantity } = req.body;
     const { productId } = req.params;
 
-    const product = await Product.findOne({ _id: productId, stock: { $gte: quantity } })
+    const product = await checkProductStock(productId, quantity)
     if (!productId) {
         return next(new ErrorClass("Product not available", 404, "Product not available"))
     }
 
     const cart = await Cart.findOne({ userId })
     if (!cart) {
-        const subTotal = product.appliedPrice * quantity
+        // const subTotal = product.appliedPrice * quantity
         const newCart = new Cart({
             userId,
             products: [{
                 productId: product._id,
                 quantity,
                 price: product.appliedPrice
-            }],
-            subTotal
+            }]
         })
 
         await newCart.save();
@@ -41,7 +40,7 @@ export const AddToCart = async (req, res, next) => {
         quantity,
         price: product.appliedPrice
     })
-    cart.subTotal += product.appliedPrice * quantity;
+    // cart.subTotal += product.appliedPrice * quantity;
 
     await cart.save();
     res.status(200).json({ message: "Product added to cart", cart })
@@ -59,23 +58,15 @@ export const removeFromCart = async (req, res, next) => {
     const cart = await Cart.findOne({ userId, 'products.productId': productId })
     // 'products.productId' to search  for field "productId" inside array "products"
     // just like looping on array and search
-                                                                                    
+
     if (!cart) {
         return next(new ErrorClass("Product not in cart", 404, "Product not in cart"))
     }
 
     cart.products = cart.products.filter(p => p.productId != productId)
 
-    // after deleting last product inside cart (cart is empty), delete whole cart
-    if(cart.products.length === 0){
-        await Cart.deleteOne({ userId });
-        return res.status(200).json({ message: "Product removed from cart"})
-    }
+    // (Hooks) after deleting last product inside cart (cart is empty), delete whole cart
 
-    cart.subTotal = 0;
-    cart.products.forEach(p => {
-        cart.subTotal += p.price * p.quantity;
-    })
     await cart.save();
     res.status(200).json({ message: "Product removed from cart", cart })
 }
@@ -88,12 +79,12 @@ export const updateCart = async (req, res, next) => {
     const { quantity } = req.body;
     const { productId } = req.params;
 
-    const cart = await Cart.findOne({ userId, 'products.productId': productId })                                                                                    
+    const cart = await Cart.findOne({ userId, 'products.productId': productId })
     if (!cart) {
         return next(new ErrorClass("Product not in cart", 404, "Product not in cart"))
     }
 
-    const product = await Product.findOne({ _id: productId, stock: { $gte: quantity } })
+    const product = await checkProductStock(productId, quantity)
     if (!product) {
         return next(new ErrorClass("Product not available", 404, "Product not available"))
     }
@@ -101,10 +92,6 @@ export const updateCart = async (req, res, next) => {
     const productIndex = cart.products.findIndex(p => p.productId.toString() == product._id.toString());
     cart.products[productIndex].quantity = quantity;
 
-    cart.subTotal = 0;
-    cart.products.forEach(p => {
-        cart.subTotal += p.price * p.quantity;
-    })
     await cart.save();
     res.status(200).json({ message: "Cart updated", cart })
 }

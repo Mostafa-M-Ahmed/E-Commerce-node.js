@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { calculateCartTotal } from "../../src/Modules/Cart/Utils/cart.utils.js";
 
 const { Schema, model } = mongoose;
 
@@ -32,5 +33,17 @@ const cartSchema = Schema({
 
 
 }, { timestamp: true });
+
+cartSchema.pre('save', function(next) {
+    this.subTotal = calculateCartTotal(this.products);
+    // console.log(`calculating subTotal before save: ${this.subTotal}`);
+    next();
+})
+
+cartSchema.post('save', async function(doc) {
+    if (doc.products.length === 0) {
+        await Cart.deleteOne({ userId: doc.userId });
+    }
+})
 
 export const Cart = mongoose.models.Cart || model("Cart", cartSchema);
