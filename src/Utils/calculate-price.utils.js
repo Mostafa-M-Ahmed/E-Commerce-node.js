@@ -10,9 +10,9 @@ import { DiscountType } from "./index.js";
 export const calculateProductPrice = (price, discount) => {
   let appliedPrice = price;
 
-  if (discount.type === DiscountType.PERCENTAGE) {
+  if (discount.type === DiscountType.Percentage) {
     appliedPrice = price - (price * discount.amount) / 100;
-  } else if (discount.type === DiscountType.FIXED) {
+  } else if (discount.type === DiscountType.Fixed) {
     appliedPrice = price - discount.amount;
   }
 

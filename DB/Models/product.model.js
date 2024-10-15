@@ -48,7 +48,7 @@ const productSchema = new Schema(
       type: {
         type: String,
         enum: Object.values(DiscountType),
-        default: DiscountType.PERCENTAGE,
+        default: DiscountType.Percentage,
       },
     },
     appliedPrice: {

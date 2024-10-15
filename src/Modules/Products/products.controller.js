@@ -7,8 +7,8 @@ import {
   calculateProductPrice,
   ErrorClass,
   uploadFile,
+  ApiFeatures
 } from "../../Utils/index.js";
-import { ApiFeatures } from "../../Utils/api-features.utils.js";
 
 /**
  * @api {post} /products/add  Add Product
