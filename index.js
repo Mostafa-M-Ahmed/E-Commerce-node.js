@@ -19,6 +19,8 @@ app.use("/products", router.productRouter);
 app.use("/users", router.userRouter);
 app.use("/addresses", router.addressRouter);
 app.use("/carts", router.userRouter);
+app.use("/coupons", router.userRouter);
+
 
 
 

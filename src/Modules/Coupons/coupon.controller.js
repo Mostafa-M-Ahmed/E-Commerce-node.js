@@ -3,10 +3,10 @@ import { ErrorClass } from "../../Utils/error-class.utils.js";
 
 
 /**
- * @api {POST} /addresses Add new address
+ * @api {POST} /coupons Create new coupon
  */
 export const createCoupon = async (req, res, next) => {
-    const { couponCode, from, till, couponAmount, couponType, Users } = req.body;     //setAsDefault from frontend
+    const { couponCode, from, till, couponAmount, couponType, Users } = req.body;
 
     // coupon code check
     const isCouponCodeExist = await Coupon.findOne({ couponCode })
@@ -15,11 +15,6 @@ export const createCoupon = async (req, res, next) => {
 
     }
 
-    const userIds = Users.map(u => u.userId)    // [userId1, userId2]
-    const validUsers = await User.find({ _id: { $in: userIds } })
-    if (validUsers.length !== userIds.length) {
-        return next(new ErrorClass("Invalid users", 400, "Invalid users"))
-    }
 
     const newCoupon = new Coupon({
         couponCode, from, till, couponAmount, couponType, Users, createdBy: req.authUser._id
@@ -33,59 +28,91 @@ export const createCoupon = async (req, res, next) => {
     });
 };
 
+
 /**
- * @api {PUT} /addresses/edit/:id Edit address by id
+ * @api {GET} /coupons Get all coupons
  */
-export const editAddress = async (req, res, next) => {
-    const { country, city, postalCode, buildingNumber, floorNumber, addressLabel, setAsDefault } = req.body;     //setAsDefault from frontend
-    const userId = req.authUser._id;    //user must be logged in
-    const { addressId } = req.params
-
-    const address = await Address.findOne({ _id: addressId, userId, isMarkedAsDeleted: false })
-    if (!address) {
-        return next(new ErrorClass("Address not found", 404, "Address not found"))
+export const getCoupons = async (req, res, next) => {
+    const { isEnabled } = req.query;    // true or false
+    const filters = {};
+    if (isEnabled) {
+        filters.isEnabled = isEnabled === "true" ? true : false
     }
-
-    if (country) address.country = country;
-    if (city) address.city = city;
-    if (postalCode) address.postalCode = postalCode;
-    if (buildingNumber) address.buildingNumber = buildingNumber;
-    if (floorNumber) address.floorNumber = floorNumber;
-    if (addressLabel) address.addressLabel = addressLabel;
-    if ([true, false].includes(setAsDefault) ? setAsDefault : false) {
-        address.isDefault = [true, false].includes(setAsDefault) ? setAsDefault : false
-        await Address.updateOne({ userId, isDefault: true }, { isDefault: false })
-    }
-
-    await address.save()
-    res.status(200).json({ message: "Address updated", address })
+    const coupons = await Coupon.find(filters)
+    res.status(200).json({ coupons })
 }
 
 
 /**
- * @api {DELETE} /addresses/delete/:id Delete address by id
+ * @api {GET} /coupons/:couponId Get coupon by id
  */
-export const deleteAddress = async (req, res, next) => {
-    const userId = req.authUser._id;    //user must be logged in
-    const { addressId } = req.params
-
-    const address = await Address.findOneAndUpdate(
-        { _id: addressId, userId, isMarkedAsDeleted: false },
-        { isMarkedAsDeleted: true, isDefault: false },
-        { new: true }
-    )
-    if (!address) {
-        return next(new ErrorClass("Address not found", 404, "Address not found"))
+export const getCouponById = async (req, res, next) => {
+    const { couponId } = req.params;
+    const coupon = await Coupon.findById(couponId);
+    if (!coupon) {
+        return next(new ErrorClass("Coupon not found", 404, "Coupon not found"));
     }
-
-    res.status(200).json({ message: "Address deleted", address })
+    res.status(200).json({ coupon })
 }
 
 /**
- * @api {GET} /addresses Get all addresses
+ * @api {PUT} /coupons/:couponId update coupon by id
  */
-export const getAddresses = async (req, res, next) => {
-    const userId = req.authUser._id;    //user must be logged in
-    const addresses = await Address.find({ userId, isMarkedAsDeleted: false })
-    res.status(200).json({ addresses })
+export const updateCoupon = async (req, res, next) => {
+    const { couponId } = req.params;
+    const userId = req.authUser._id;
+    const { couponCode, from, till, couponAmount, couponType, Users } = req.body;
+
+    const coupon = await Coupon.findById(couponId)
+    if (!coupon) {
+        return next(new ErrorClass("Coupon not found", 404, "Coupon not found"));
+    }
+
+    const logUpdatedObject = { couponId, updatedBy: userId, changes: {} }
+    if (couponCode) {
+        const isCouponCodeExist = await Coupon.findOne({ couponCode })
+        if (isCouponCodeExist) {
+            return next(new ErrorClass("Coupon code already exist", 400, "Coupon code already exist"))
+        }
+        coupon.couponCode = couponCode;
+        logUpdatedObject.changes.couponCode = couponCode;
+    }
+
+    if (from) {
+        coupon.from = from;
+        logUpdatedObject.changes.from = from;
+    }
+
+    if (till) {
+        coupon.till = till;
+        logUpdatedObject.changes.till = till;
+    }
+
+    if (couponAmount) {
+        coupon.couponAmount = couponAmount;
+        logUpdatedObject.changes.couponAmount = couponAmount;
+    }
+
+    if (couponType) {
+        coupon.couponType = couponType;
+        logUpdatedObject.changes.couponType = couponType;
+    }
+
+    if (Users) {
+        const userIds = Users.map(u => u.userId)
+        const validUsers = await User.find({ _id: { $in: userIds } })
+        if (validUsers.length !== userIds.length) {
+            return next(new ErrorClass("Invalid users", 400, "Invalid users"))
+        }
+        coupon.Users = Users;
+        logUpdatedObject.changes.Users = Users;
+    }
+
+    await coupon.save();
+    const log = new CouponChangeLog(logUpdatedObject).save();
+    res.status(200).json({ message: "Coupon updated", coupon, log})
 }
+
+/**
+ * @api {PATCH} /coupons/:couponId Disable coupon by id
+ */
