@@ -60,7 +60,7 @@ export const Coupon = mongoose.models.Coupon || model("Coupon", couponSchema)
 // Create coupon change log model
 // couponId, userId, changes:{}
 
-const couænChangeLogSchema = new Schema({
+const couponChangeLogSchema = new Schema({
     couponId: {
         type: Schema.Types.ObjectId,
         ref: "Coupon",
@@ -77,4 +77,4 @@ const couænChangeLogSchema = new Schema({
     }
 }, { timestamps: true });
 
-export const CouponChangeLog = mongoose.models.CouponChangeLog || model("CouponChangeLog", couænChangeLogSchema)
+export const CouponChangeLog = mongoose.models.CouponChangeLog || model("CouponChangeLog", couponChangeLogSchema)

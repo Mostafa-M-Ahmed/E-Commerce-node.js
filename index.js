@@ -8,7 +8,7 @@ import * as router from "./src/Modules/index.js";
 config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
@@ -18,8 +18,8 @@ app.use("/brands", router.brandRouter);
 app.use("/products", router.productRouter);
 app.use("/users", router.userRouter);
 app.use("/addresses", router.addressRouter);
-app.use("/carts", router.userRouter);
-app.use("/coupons", router.userRouter);
+app.use("/carts", router.cartRouter);
+app.use("/coupons", router.couponRouter);
 
 
 

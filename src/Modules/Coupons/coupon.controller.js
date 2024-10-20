@@ -1,4 +1,4 @@
-import { Coupon, User } from "../../../DB/Models/index.js";
+import { Coupon, User, CouponChangeLog } from "../../../DB/Models/index.js";
 import { ErrorClass } from "../../Utils/error-class.utils.js";
 
 
@@ -55,6 +55,7 @@ export const getCouponById = async (req, res, next) => {
     res.status(200).json({ coupon })
 }
 
+
 /**
  * @api {PUT} /coupons/:couponId update coupon by id
  */
@@ -109,10 +110,37 @@ export const updateCoupon = async (req, res, next) => {
     }
 
     await coupon.save();
-    const log = new CouponChangeLog(logUpdatedObject).save();
+    const log = await new CouponChangeLog(logUpdatedObject).save();
     res.status(200).json({ message: "Coupon updated", coupon, log})
 }
+
 
 /**
  * @api {PATCH} /coupons/:couponId Disable coupon by id
  */
+export const toggleCouponStatus = async (req, res, next) => {
+    const { couponId } = req.params;
+    const userId = req.authUser._id;
+    const { enabled } = req.body;
+
+    const coupon = await Coupon.findById(couponId)
+    if (!coupon) {
+        return next(new ErrorClass("Coupon not found", 404, "Coupon not found"));
+    }
+
+    const logUpdatedObject = { couponId, updatedBy: userId, changes: {} }
+
+    if (enabled === true) {
+        coupon.isEnabled = true;
+        logUpdatedObject.changes.isEnabled = true;
+    }
+
+    if (enabled === false) {
+        coupon.isEnabled = false;
+        logUpdatedObject.changes.isEnabled = false;
+    }
+
+    await coupon.save();
+    const log = new CouponChangeLog(logUpdatedObject).save();
+    res.status(200).json({ message: "Coupon updated", coupon, log})
+}

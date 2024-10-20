@@ -10,5 +10,6 @@ const objectIdValidation = (value, helper) => {
 }
 
 export const generalRules = {
-    _id: Joi.string().custom(objectIdValidation),
+    // _id: Joi.string().custom(objectIdValidation)
+    _id: Joi.custom(objectIdValidation)
 }

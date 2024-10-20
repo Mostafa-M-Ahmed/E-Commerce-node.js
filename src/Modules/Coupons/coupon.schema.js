@@ -44,7 +44,7 @@ export const UpdateCouponSchema = {
     params: Joi.object({
         couponId: generalRules._id.required()
     }),
-    params: Joi.object({
+    authUser: Joi.object({
         _id: generalRules._id.required()
-    }).options({ allowUnkown: true })
+    }).options({ allowUnknown: true })
 }
