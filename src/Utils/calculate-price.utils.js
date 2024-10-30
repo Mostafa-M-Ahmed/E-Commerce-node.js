@@ -7,14 +7,16 @@ import { DiscountType } from "./index.js";
  * @returns  number - calculated price
  * @description  calculate the product price based on the discount type and amount
  */
+
 export const calculateProductPrice = (price, discount) => {
-  let appliedPrice = price;
-
-  if (discount.type === DiscountType.Percentage) {
-    appliedPrice = price - (price * discount.amount) / 100;
-  } else if (discount.type === DiscountType.Fixed) {
-    appliedPrice = price - discount.amount;
-  }
-
-  return appliedPrice;
+    let appliedPrice = price;
+    const { amount: discountAmount, type: discountType } = discount;
+    if (discountAmount && discountType) {
+        if (discountType === DiscountType.Percentage) {
+            appliedPrice = price - (price * discountAmount) / 100;
+        } else if (discountType === DiscountType.Amount) {
+            appliedPrice = price - discountAmount;
+        }
+    }
+    return appliedPrice;
 };

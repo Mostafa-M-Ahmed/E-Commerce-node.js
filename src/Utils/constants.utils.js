@@ -19,3 +19,20 @@ export const Badges = {
     SALE: "Sale",
     BEST_SELLER: "Best Seller",
 }
+
+export const PaymentMethods = {
+    Stripe: 'stripe',
+    Paymob: 'paymob',
+    Cash: 'cash'
+}
+
+export const OrderStatus = {
+    Pending: 'pending',
+    Placed: 'placed',
+    Confirmed: 'confirmed',
+    Cancelled: 'cancelled',
+    Refunded: 'refunded',
+    Delivered: 'delivered',
+    Dropped: 'dropped',
+    OnWay: 'onway'
+}
