@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-import { OrderStatus, PaymentMethods } from "../../src/Utils/index.js";
+import { OrderStatus, PaymentMethod } from "../../src/Utils/index.js";
+import { Product } from "./product.model.js";
+import { Coupon } from "./coupon.model.js";
 const { Schema, model } = mongoose;
 
 const orderSchema = new Schema({
@@ -63,10 +65,10 @@ const orderSchema = new Schema({
         type: Date,
         required: true
     },
-    paymentMethods: {
+    paymentMethod: {
         type: String,
         required: true,
-        enum: Object.values(PaymentMethods)
+        enum: Object.values(PaymentMethod)
     },
     orderStatus: {
         type: String,
@@ -85,4 +87,18 @@ const orderSchema = new Schema({
     cancelledAt: Date,
 }, { timestamps: true });
 
+
+orderSchema.post('save', async function () {
+    // decrement stock of products
+    for (const product of this.products) {
+        await Product.updateOne({ _id: product.productId }, { $inc: { stock: -product.quantity } });
+    }
+
+    // increment stock of products
+    if (this.couponId) {
+        const coupon = await Coupon.findById(this.couponId);
+        coupon.Users.find(u => u.userId.toString() === this.userId.toString()).usageCount++;
+        await coupon.save();
+    }
+})
 export const Order = mongoose.models.Order || model("Order", orderSchema)

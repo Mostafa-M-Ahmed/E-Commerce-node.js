@@ -20,7 +20,7 @@ app.use("/brands", router.brandRouter);
 app.use("/products", router.productRouter);
 app.use("/users", router.userRouter);
 app.use("/addresses", router.addressRouter);
-app.use("/carts", router.cartRouter);
+app.use("/cart", router.cartRouter);
 app.use("/coupons", router.couponRouter);
 app.use("/orders", router.orderRouter);
 
@@ -36,4 +36,4 @@ disableCouponsCron()
 gracefulShutdown()
 
 app.get("/", (req, res) => res.send("Hello World!"));
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`E-commerce app listening on port ${port}!`));

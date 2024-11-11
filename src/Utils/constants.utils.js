@@ -20,7 +20,7 @@ export const Badges = {
     BEST_SELLER: "Best Seller",
 }
 
-export const PaymentMethods = {
+export const PaymentMethod = {
     Stripe: 'stripe',
     Paymob: 'paymob',
     Cash: 'cash'

@@ -9,12 +9,12 @@ import { extensions } from "../../Utils/index.js";
 import { Brand } from "../../../DB/Models/index.js";
 
 const productRouter = Router();
-const { errorHandler, multerHost, checkIfIdsExit } = Middlewares;
+const { errorHandler, multerHost, checkIfIdsExist } = Middlewares;
 
 productRouter.post(
   "/add",
   multerHost({ allowedExtensions: extensions.Images }).array("image", 5),
-  checkIfIdsExit(Brand),
+  checkIfIdsExist(Brand),
   errorHandler(controller.addProduct)
 );
 

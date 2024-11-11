@@ -31,16 +31,19 @@ export const AddToCart = async (req, res, next) => {
         await newCart.save();
         res.status(201).json({ message: "Product added to cart", cart: newCart })
     }
-    const isProductExist = cart.products.find(p => p.productId == productId)
+
+    // is product exists in cart
+    const isProductExist = cart?.products?.find(p => p.productId == productId)
     if (isProductExist) {
         return next(new ErrorClass("Product already in car", 404, "Product already in car"))
     }
-    cart.products.push({
+
+    // const subTotal = product.appliedPrice * quantity
+    cart?.products?.push({
         productId: product._id,
         quantity,
         price: product.appliedPrice
     })
-    // cart.subTotal += product.appliedPrice * quantity;
 
     await cart.save();
     res.status(200).json({ message: "Product added to cart", cart })

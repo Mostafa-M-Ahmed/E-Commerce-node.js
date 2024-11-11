@@ -31,7 +31,7 @@ export const getDocumentByName = (model) => {
  * @returns {Function} - Middleware function to check if the document exist
  * @description - Check if the document exist in the database with the given ids
  */
-export const checkIfIdsExit = (model) => {
+export const checkIfIdsExist = (model) => {
   return async (req, res, next) => {
     const { category, subCategory, brand } = req.query;
     // Ids check

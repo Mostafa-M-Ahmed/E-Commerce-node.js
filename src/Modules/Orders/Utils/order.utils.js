@@ -30,7 +30,7 @@ export const validateCoupon = async (couponCode, userId) => {
     if(isUserNotEligible) {
         return { message: "User is either not eligible to use this coupon or has redeemed all their tries", error: true}
     }
-
+    
     return {error: false, coupon}
 }
 
